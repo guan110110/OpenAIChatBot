@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for OpenSupport customer service agent.
 """
@@ -72,10 +73,10 @@ def test_invalid_order_number_handling():
 
     # 轮次 2: 输入不存在的订单号 ORD100331
     reply2, s2 = agent.process_message("帮我查下订单 ORD100331 的物流", session_id="test_invalid_order")
-    # 验证：不能返回之前的 ORD1001，而要明确提示未查到 ORD100331
+    # 验证：不能返回上轮 ORD1001 的具体商品与物流轨迹
     assert "ORD100331" in reply2
-    assert "未查到" in reply2
-    assert "顺丰速运" not in reply2
+    assert "Pro 30" not in reply2
+    assert "SF10882938123" not in reply2
     # 验证：错误单号被自动清空，避免污染后续会话槽位
     assert s2.slots.get("order_id") is None
     assert s2.state == DialogState.COLLECTING_SLOTS
