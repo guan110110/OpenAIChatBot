@@ -8,7 +8,7 @@ import json
 from typing import Dict, Any, Tuple, Optional
 from opensupport.session import SessionManager, SessionState, DialogState
 from opensupport.intent import IntentClassifier
-from opensupport.rag import FAQRetriever
+from opensupport.rag import FAQRetriever, VectorFAQRetriever
 from opensupport.tools import OrderService, ORDER_TOOLS_SCHEMA
 from opensupport.config import get_llm_config
 
@@ -16,9 +16,12 @@ from opensupport.config import get_llm_config
 class CustomerServiceAgent:
     def __init__(self, session_manager: Optional[SessionManager] = None):
         self.session_manager = session_manager or SessionManager()
-        self.faq_retriever = FAQRetriever()
-        self.order_service = OrderService()
         self.llm_cfg = get_llm_config()
+        self.faq_retriever = VectorFAQRetriever(
+            client=self.llm_cfg.get("client"),
+            embedding_model="embedding-3"
+        )
+        self.order_service = OrderService()
 
         self.system_prompt = (
             "你是一家数码官方旗舰店的专业智能客服代表（名叫‘小智’）。\n"
