@@ -69,10 +69,18 @@ class CustomerServiceAgent:
             session.add_message("assistant", reply)
             return reply, session
 
-        # 3. 槽位状态机检测 (Slot-Filling)
+        # 3. 槽位状态机检测与任务恢复 (Slot-Filling & Task Resumption)
         extracted_order = self._extract_order_id(user_text)
         if extracted_order:
             session.fill_slot("order_id", extracted_order)
+            # 关键状态机恢复：如果之前正在等待订单号槽位，恢复之前挂起的业务意图
+            if session.pending_intent:
+                intent = session.pending_intent
+                session.pending_intent = None
+                session.current_intent = intent
+            elif intent == "UNKNOWN":
+                intent = "ORDER_QUERY"
+                session.current_intent = intent
 
         # 4. 业务办理意图 (查订单 / 查物流 / 退款)
         if intent in ["ORDER_QUERY", "REFUND"]:
@@ -80,9 +88,10 @@ class CustomerServiceAgent:
             order_id = session.slots.get("order_id")
 
             if not order_id:
-                # 槽位缺失，主动向用户追问
+                # 槽位缺失，主动向用户追问，并挂起当前意图
                 session.state = DialogState.COLLECTING_SLOTS
                 session.waiting_for_slot = "order_id"
+                session.pending_intent = intent
                 session.last_thought = f"用户希望进行【{intent}】，但缺少必要参数 `order_id`，向用户发起礼貌追问。"
                 reply = (
                     "好的，查件或办理业务需要核对您的订单信息。\n"

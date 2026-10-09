@@ -46,3 +46,20 @@ def test_refund_action():
     agent = CustomerServiceAgent()
     reply, session = agent.process_message("我要申请退款，订单号是 ORD1002", session_id="test_user_4")
     assert "退款" in reply or "受理" in reply
+
+
+def test_user_screenshot_scenario():
+    """复现用户在截图中遇到的对话场景"""
+    agent = CustomerServiceAgent()
+    # 轮次 1: 用户仅发送四个字 "物流轨迹"
+    reply1, s1 = agent.process_message("物流轨迹", session_id="user_screenshot_test")
+    assert s1.state == DialogState.COLLECTING_SLOTS
+    assert s1.waiting_for_slot == "order_id"
+    assert "订单编号" in reply1 or "订单" in reply1
+
+    # 轮次 2: 用户紧接着只回复纯单号 "ORD1001"
+    reply2, s2 = agent.process_message("ORD1001", session_id="user_screenshot_test")
+    assert s2.slots.get("order_id") == "ORD1001"
+    assert "顺丰速运" in reply2
+    assert "ORD1001" in reply2
+

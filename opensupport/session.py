@@ -33,6 +33,7 @@ class SessionState(BaseModel):
     sentiment_score: int = 1               # 1(平和) ~ 5(极度愤怒)
     slots: Dict[str, Any] = Field(default_factory=dict)
     waiting_for_slot: Optional[str] = None # 当前正在向用户追问的槽位名
+    pending_intent: Optional[str] = None   # 等待槽位补全的业务意图 (如 ORDER_QUERY, REFUND)
     history: List[Dict[str, str]] = Field(default_factory=list)
     tickets: List[SupportTicket] = Field(default_factory=list)
     last_thought: str = ""
