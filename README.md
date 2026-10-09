@@ -56,28 +56,28 @@ OpenSupport 采用极简全屏经典即时通讯设计，同时兼顾开发者�
 
 ```mermaid
 flowchart TD
-    User([用户在终端/网页发送输入]) --> Guard[安全风控与情绪烈度实时评估]
+    User["用户在终端或网页发送输入"] --> Guard["安全风控与情绪烈度实时评估"]
     
-    subgraph Reasoning [LLM 分析与决策中枢]
-        Guard --> Sentiment{情绪是否激化 (>=4分) / 索要人工?}
-        Sentiment -- 是 (触发风控) --> Escalate[生成加急工单 Support Ticket & 转接人工]
-        Sentiment -- 否 (情绪平稳) --> IntentRouter[LLM 意图路由分类器]
+    subgraph Reasoning["LLM 分析与决策中枢"]
+        Guard --> Sentiment{"情绪是否激化或要求转人工?"}
+        Sentiment -->|"是（触发风控）"| Escalate["生成加急工单 Support Ticket 并转接人工"]
+        Sentiment -->|"否（情绪平稳）"| IntentRouter["LLM 意图路由分类器"]
     end
 
-    subgraph Fulfillment [业务执行与知识检索]
-        IntentRouter -- 售后政策/常见问题 (FAQ) --> VectorRAG[高维向量数据库检索: Dense Vector + Hybrid Search]
-        IntentRouter -- 查订单/查物流/办退款 --> SlotCheck{必要槽位 (order_id) 是否齐全?}
-        SlotCheck -- 缺失关键单号 --> SlotPrompt[状态机主导: 向用户主动追问订单编号]
-        SlotCheck -- 槽位完整 / 单号已纠偏 --> ToolExec[执行真实业务接口: 查订单/查物流/申请退款]
-        IntentRouter -- 日常闲聊/问候 --> Chitchat[大模型温和问候与业务引导]
+    subgraph Fulfillment["业务执行与知识检索"]
+        IntentRouter -->|"售后政策与常见问答 FAQ"| VectorRAG["高维向量数据库检索 (Dense Vector + Hybrid Search)"]
+        IntentRouter -->|"查订单、查物流或申请退款"| SlotCheck{"必要槽位 order_id 是否齐全?"}
+        SlotCheck -->|"缺失关键单号"| SlotPrompt["状态机主导: 向用户主动追问订单编号"]
+        SlotCheck -->|"槽位完整或单号已纠偏"| ToolExec["执行业务接口: 查订单、物流轨迹或申请退款"]
+        IntentRouter -->|"日常问候与闲聊"| Chitchat["大模型温和问候与业务引导"]
     end
 
-    VectorRAG --> Synthesize[LLM 结合业务上下文整合最终客服回复]
+    VectorRAG --> Synthesize["LLM 结合业务上下文整合最终回复"]
     SlotPrompt --> Synthesize
     ToolExec --> Synthesize
     Chitchat --> Synthesize
     Escalate --> Synthesize
-    Synthesize --> Output([输出结构化回复至客户端])
+    Synthesize --> Output["输出结构化回复至客户端"]
 ```
 
 ---
