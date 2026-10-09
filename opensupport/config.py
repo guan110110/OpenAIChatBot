@@ -9,6 +9,26 @@ from typing import Dict, Any, Optional
 from openai import OpenAI
 
 
+def load_dotenv():
+    """轻量级自动加载项目根目录下的 .env 文件，零外部依赖"""
+    env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip("'\"")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+        except Exception:
+            pass
+
+load_dotenv()
+
+
 def is_ollama_alive(url: str = "http://localhost:11434") -> bool:
     """探测本地是否启动了 Ollama 服务"""
     try:
