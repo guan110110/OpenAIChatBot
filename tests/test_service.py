@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Unit tests for OpenSupport customer service agent.
+Unit tests for OpenAIChatBot customer service agent.
 """
 
 import os
@@ -9,8 +9,8 @@ import sys
 # 注入项目路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from opensupport.agent import CustomerServiceAgent
-from opensupport.session import DialogState
+from openaichatbot.agent import CustomerServiceAgent
+from openaichatbot.session import DialogState
 
 
 def test_faq_question():

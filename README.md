@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎧 OpenSupport
+# 🎧 OpenAIChatBot
 
 ### 基于大语言模型 (LLM) 的现代化智能客服 Agent 框架
 *A Production-Ready LLM-Powered Customer Service Agent Framework with Dynamic Intent Routing, Stateful Slot Filling, Vector RAG & Tool Orchestration.*
@@ -19,13 +19,13 @@
 
 ## 📸 界面效果样例
 
-OpenSupport 采用极简全屏经典即时通讯设计，同时兼顾开发者与业务运营人员的监控诉求，原生集成 Agent 决策实时洞察能力：
+OpenAIChatBot 采用极简全屏经典即时通讯设计，同时兼顾开发者与业务运营人员的监控诉求，原生集成 Agent 决策实时洞察能力：
 
 <div align="center">
 
-![OpenSupport 全屏经典智能客服工作台](docs/images/preview.png)
+![OpenAIChatBot 全屏经典智能客服工作台](docs/images/preview.png)
 
-*图：OpenSupport 经典全屏对话窗口与多轮业务办理演示（包含意图分类、槽位自动填充 `order_id`、订单物流详情调取与结构化退款受理）*
+*图：OpenAIChatBot 经典全屏对话窗口与多轮业务办理演示（包含意图分类、槽位自动填充 `order_id`、订单物流详情调取与结构化退款受理）*
 
 </div>
 
@@ -41,7 +41,7 @@ OpenSupport 采用极简全屏经典即时通讯设计，同时兼顾开发者�
 
 在传统智能客服中，规则库匹配往往过于死板，而简单的“大模型 Prompt 套壳”又容易在真实复杂业务中产生**幻觉、乱调用工具、无法多轮追问缺失参数**等严重缺陷。
 
-**OpenSupport 是专为解决生产环境复杂业务设计的 LLM 智能客服 Agent 框架。**  
+**OpenAIChatBot 是专为解决生产环境复杂业务设计的 LLM 智能客服 Agent 框架。**  
 它将大语言模型强大的**自然语言理解与推理能力**，与确定性的**业务状态机、高维向量数据库检索、电商业务工具链、情绪风控转人工**进行深度协同：
 
 1. **LLM 意图驱动分流**：利用大模型语义理解，精准识别用户意图（政策问答 FAQ、业务查询办理、闲聊问候、投诉转人工），实现精准业务分流。
@@ -84,7 +84,7 @@ flowchart TD
 
 ## 🔌 支持的配置与集成
 
-OpenSupport 采用高度模块化解耦设计，支持丰富的模型供应商、向量检索引擎与企业业务系统集成：
+OpenAIChatBot 采用高度模块化解耦设计，支持丰富的模型供应商、向量检索引擎与企业业务系统集成：
 
 ### 1. 大语言模型 (LLM) 集成
 
@@ -145,8 +145,8 @@ OpenSupport 采用高度模块化解耦设计，支持丰富的模型供应商�
 
 ```bash
 # 1. 克隆代码仓库
-git clone https://github.com/guan110110/OpenSupport.git
-cd OpenSupport
+git clone https://github.com/guan110110/OpenAIChatBot.git
+cd OpenAIChatBot
 
 # 2. 安装 Python 依赖
 pip install -r requirements.txt
@@ -248,11 +248,11 @@ tests/test_vector_rag.py::test_vector_faq_retriever_semantic_match PASSED [100%]
 
 ## 💻 独立使用向量检索代码示例
 
-若您希望在自己的独立脚本或微服务中复用 OpenSupport 的向量检索能力：
+若您希望在自己的独立脚本或微服务中复用 OpenAIChatBot 的向量检索能力：
 
 ```python
-from opensupport.rag import VectorFAQRetriever
-from opensupport.config import get_llm_config
+from openaichatbot.rag import VectorFAQRetriever
+from openaichatbot.config import get_llm_config
 
 # 1. 自动装载大模型 Embedding 配置（支持自动维度校验与本地索引同步）
 cfg = get_llm_config()
@@ -277,8 +277,8 @@ print(f"最终采纳: {best['question']}")
 ## 📁 项目目录结构
 
 ```
-OpenSupport/
-├── opensupport/               # 核心框架源码
+OpenAIChatBot/
+├── openaichatbot/               # 核心框架源码
 │   ├── agent.py               # 客服 Agent 核心调度中枢
 │   ├── config.py              # 多模型供应商自适应发现与配置层
 │   ├── intent.py              # LLM 意图识别与槽位抽取
@@ -310,9 +310,9 @@ OpenSupport/
 
 ## 🌐 English Overview
 
-**OpenSupport** is an enterprise-ready, open-source AI Customer Service Agent framework built on top of Large Language Models (LLMs), FastAPI, and Vector RAG. 
+**OpenAIChatBot** is an enterprise-ready, open-source AI Customer Service Agent framework built on top of Large Language Models (LLMs), FastAPI, and Vector RAG. 
 
-Unlike traditional chatbot wrappers, OpenSupport is engineered specifically for production operations:
+Unlike traditional chatbot wrappers, OpenAIChatBot is engineered specifically for production operations:
 * **LLM Intent Routing**: Accurately classifies customer intents into Policy FAQ, Order Fulfillment, General Chitchat, or Escalation.
 * **Stateful Slot Filling**: Proactively and gently prompts users for missing arguments (e.g. `order_id`) across multi-turn conversations.
 * **Dense Vector & Hybrid RAG**: Built-in NumPy vector engine supporting 2048-dim embeddings (`embedding-3`), OpenAI, and offline semantic hashing.

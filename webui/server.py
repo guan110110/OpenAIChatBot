@@ -1,5 +1,5 @@
 """
-OpenSupport Web Server - FastAPI Native Customer Service Console.
+OpenAIChatBot Web Server - FastAPI Native Customer Service Console.
 零前端构建依赖，原生支持即开即用的高颜值智能客服 Web 工作台。
 """
 
@@ -22,10 +22,10 @@ import uvicorn
 # 注入项目根目录
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from opensupport.agent import CustomerServiceAgent
-from opensupport.session import SessionManager
+from openaichatbot.agent import CustomerServiceAgent
+from openaichatbot.session import SessionManager
 
-app = FastAPI(title="OpenSupport AI Console")
+app = FastAPI(title="OpenAIChatBot AI Console")
 session_manager = SessionManager()
 agent = CustomerServiceAgent(session_manager=session_manager)
 
@@ -40,7 +40,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenSupport - 官方智能客服</title>
+    <title>OpenAIChatBot - 官方智能客服</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -67,7 +67,7 @@ HTML_TEMPLATE = """
             <!-- 客服名称与信息 -->
             <div>
                 <div class="flex items-center space-x-2">
-                    <h1 class="font-bold text-slate-800 text-sm sm:text-base tracking-tight">OpenSupport 官方智能客服</h1>
+                    <h1 class="font-bold text-slate-800 text-sm sm:text-base tracking-tight">OpenAIChatBot 官方智能客服</h1>
                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></span> 在线
                     </span>
@@ -488,7 +488,7 @@ async def chat_endpoint(req: ChatRequest):
 
 def main(host: str = "127.0.0.1", port: int = 8501):
     url = f"http://{host}:{port}"
-    print(f"\n[OpenSupport] 智能客服 Web 控制台正在启动...")
+    print(f"\n[OpenAIChatBot] 智能客服 Web 控制台正在启动...")
     print(f"本地访问地址: {url}")
     print(f"正在尝试在浏览器中打开该页面...\n")
     try:

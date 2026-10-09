@@ -1,5 +1,5 @@
 """
-Streamlit Web Console for OpenSupport Customer Service Agent.
+Streamlit Web Console for OpenAIChatBot Customer Service Agent.
 运行方式: streamlit run webui/streamlit_app.py
 """
 
@@ -10,12 +10,12 @@ import streamlit as st
 # 注入项目根目录
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from opensupport.agent import CustomerServiceAgent
-from opensupport.session import SessionManager
+from openaichatbot.agent import CustomerServiceAgent
+from openaichatbot.session import SessionManager
 
 # 页面基础配置
 st.set_page_config(
-    page_title="OpenSupport - 智能客服工作台",
+    page_title="OpenAIChatBot - 智能客服工作台",
     page_icon="🎧",
     layout="wide"
 )
@@ -34,7 +34,7 @@ if "session_id" not in st.session_state:
 
 # ----------------- 侧边栏：Agent 内部决策监控看板 -----------------
 with st.sidebar:
-    st.title("🎧 OpenSupport")
+    st.title("🎧 OpenAIChatBot")
     st.caption("AI Agent 内部决策与状态监控看板")
 
     agent = st.session_state.agent

@@ -1,5 +1,5 @@
 """
-CLI Interactive Chat for OpenSupport.
+CLI Interactive Chat for OpenAIChatBot.
 终端交互式客户服务 Agent 体验脚本。
 """
 
@@ -8,7 +8,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from opensupport.agent import CustomerServiceAgent
+from openaichatbot.agent import CustomerServiceAgent
 from rich.console import Console
 from rich.panel import Panel
 
@@ -17,7 +17,7 @@ console = Console()
 def main():
     agent = CustomerServiceAgent()
     console.print(Panel(
-        f"[bold cyan]OpenSupport 智能客服 Agent 交互终端[/bold cyan]\n"
+        f"[bold cyan]OpenAIChatBot 智能客服 Agent 交互终端[/bold cyan]\n"
         f"当前运行引擎: [bold green]{agent.llm_cfg['provider']}[/bold green]\n"
         f"输入 [yellow]'exit'[/yellow] 或 [yellow]'quit'[/yellow] 退出交互。",
         border_style="cyan"
