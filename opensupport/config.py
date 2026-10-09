@@ -28,10 +28,22 @@ def get_llm_config() -> Dict[str, Any]:
     4. 本地运行的 Ollama (无需 Key，纯离线免费)
     5. 若全无，自动降级为内置【Mock 仿真引擎】，保证 100% 开箱可运行演示！
     """
-    # 1. DeepSeek
+    # 1. 硅基流动 SiliconFlow (提供官方永久 0 元免费的 DeepSeek-R1-7B 模型)
+    if os.getenv("SILICONFLOW_API_KEY"):
+        return {
+            "provider": "硅基流动 DeepSeek (永久免费)",
+            "client": OpenAI(
+                api_key=os.getenv("SILICONFLOW_API_KEY"),
+                base_url="https://api.siliconflow.cn/v1"
+            ),
+            "model": os.getenv("MODEL_NAME", "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B"),
+            "mode": "real"
+        }
+
+    # 2. DeepSeek 官方 API
     if os.getenv("DEEPSEEK_API_KEY"):
         return {
-            "provider": "DeepSeek (云端高性价比)",
+            "provider": "DeepSeek 官方 API",
             "client": OpenAI(
                 api_key=os.getenv("DEEPSEEK_API_KEY"),
                 base_url=os.getenv("BASE_URL", "https://api.deepseek.com")
@@ -40,7 +52,7 @@ def get_llm_config() -> Dict[str, Any]:
             "mode": "real"
         }
 
-    # 2. 智谱 GLM-4-Flash (官方永久免费)
+    # 3. 智谱 GLM-4-Flash (官方永久免费)
     if os.getenv("ZHIPU_API_KEY"):
         return {
             "provider": "智谱 GLM-4-Flash (永久免费)",
@@ -52,7 +64,19 @@ def get_llm_config() -> Dict[str, Any]:
             "mode": "real"
         }
 
-    # 3. OpenAI
+    # 4. OpenRouter (提供免付费标签 deepseek/deepseek-r1:free)
+    if os.getenv("OPENROUTER_API_KEY"):
+        return {
+            "provider": "OpenRouter DeepSeek (免费)",
+            "client": OpenAI(
+                api_key=os.getenv("OPENROUTER_API_KEY"),
+                base_url="https://openrouter.ai/api/v1"
+            ),
+            "model": os.getenv("MODEL_NAME", "deepseek/deepseek-r1:free"),
+            "mode": "real"
+        }
+
+    # 5. OpenAI
     if os.getenv("OPENAI_API_KEY"):
         return {
             "provider": "OpenAI",
@@ -64,10 +88,10 @@ def get_llm_config() -> Dict[str, Any]:
             "mode": "real"
         }
 
-    # 4. 本地 Ollama (离线免费)
+    # 6. 本地 Ollama (离线免费)
     if is_ollama_alive():
         return {
-            "provider": "本地 Ollama (离线免费)",
+            "provider": f"本地 Ollama ({os.getenv('MODEL_NAME', 'deepseek-r1:1.5b')})",
             "client": OpenAI(
                 api_key="ollama",
                 base_url="http://localhost:11434/v1"
