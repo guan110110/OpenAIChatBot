@@ -51,7 +51,7 @@ class IntentClassifier:
             return "REFUND", sentiment
 
         # 3. 订单/物流查询业务办理 (包含直接发送订单号)
-        if re.search(r'\b(ORD\d{4}|100[1-9])\b', text, re.IGNORECASE) or any(w in text_lower for w in ["订单", "快递", "物流", "发货", "到哪了", "单号", "发了没有"]):
+        if re.search(r'\b(ORD[-_]?\w+|100[1-9])\b', text, re.IGNORECASE) or any(w in text_lower for w in ["订单", "快递", "物流", "发货", "到哪了", "单号", "发了没有"]):
             return "ORDER_QUERY", sentiment
 
         # 4. 常见问候闲聊

@@ -63,3 +63,39 @@ def test_user_screenshot_scenario():
     assert "顺丰速运" in reply2
     assert "ORD1001" in reply2
 
+
+def test_invalid_order_number_handling():
+    """测试输入不存在的错误订单号"""
+    agent = CustomerServiceAgent()
+    # 轮次 1: 先查询一个正常订单
+    agent.process_message("查下订单 ORD1001", session_id="test_invalid_order")
+
+    # 轮次 2: 输入不存在的订单号 ORD100331
+    reply2, s2 = agent.process_message("帮我查下订单 ORD100331 的物流", session_id="test_invalid_order")
+    # 验证：不能返回之前的 ORD1001，而要明确提示未查到 ORD100331
+    assert "ORD100331" in reply2
+    assert "未查到" in reply2
+    assert "顺丰速运" not in reply2
+    # 验证：错误单号被自动清空，避免污染后续会话槽位
+    assert s2.slots.get("order_id") is None
+    assert s2.state == DialogState.COLLECTING_SLOTS
+
+
+def test_order_correction_dialog():
+    """测试用户表达单号输入错误并修正"""
+    agent = CustomerServiceAgent()
+    # 轮次 1: 先查询 ORD1001
+    agent.process_message("帮我查订单 ORD1001", session_id="test_correction")
+
+    # 轮次 2: 用户表示单号错了
+    reply2, s2 = agent.process_message("我输入 错误的订单", session_id="test_correction")
+    assert "重置" in reply2 or "订单编号" in reply2
+    assert s2.slots.get("order_id") is None
+
+    # 轮次 3: 用户补发正确单号
+    reply3, s3 = agent.process_message("ORD1002", session_id="test_correction")
+    assert s3.slots.get("order_id") == "ORD1002"
+    assert "京东快递" in reply3
+    assert "ORD1002" in reply3
+
+

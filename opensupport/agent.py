@@ -30,15 +30,39 @@ class CustomerServiceAgent:
         )
 
     def _extract_order_id(self, text: str) -> Optional[str]:
-        """正则尝试提取订单号 (如 ORD1001, ord1002 或 1001)"""
-        match = re.search(r'\b(ORD\d{4})\b', text, re.IGNORECASE)
-        if match:
-            return match.group(1).upper()
-        # 兼容用户只输入 1001 / 1002
-        match_digits = re.search(r'\b(100[1-9])\b', text)
+        """
+        智能提取用户输入的订单号（支持任意长度前缀、错误单号及各种口语化表达）
+        """
+        # 1. 优先匹配明确的 ORD 开头的任意单号 (如 ORD1001, ORD100331, ord-12345)
+        match_ord = re.search(r'\b(ORD[-_]?\w+)\b', text, re.IGNORECASE)
+        if match_ord:
+            return match_ord.group(1).upper().replace("-", "").replace("_", "")
+
+        # 2. 匹配跟在“订单/单号”后面的字符串 (如: 订单号 998877, 订单 ORD100331)
+        match_prefix = re.search(r'(?:订单(?:编号|号)?|单号)\s*[:：为是]?\s*([A-Za-z0-9_-]+)', text)
+        if match_prefix:
+            val = match_prefix.group(1).strip()
+            if not any(stop in val for stop in ["物流", "详情", "进度", "状态", "东西", "怎么", "的"]):
+                return val.upper()
+
+        # 3. 兼容 4 位及以上纯数字 (如 1001, 1002, 100331)
+        match_digits = re.search(r'\b(\d{4,10})\b', text)
         if match_digits:
-            return f"ORD{match_digits.group(1)}"
+            val = match_digits.group(1)
+            if val in ["1001", "1002", "1003"]:
+                return f"ORD{val}"
+            return val
         return None
+
+    def _is_order_correction(self, text: str) -> bool:
+        """识别用户是否在表达订单号输入错误 / 需要重新输入"""
+        keywords = [
+            "错了", "写错", "输错", "错误", "不对", "弄错",
+            "换个", "换一个", "不是这个", "重新输入", "重输", "改一下", "重查"
+        ]
+        has_kw = any(k in text for k in keywords)
+        has_order = any(w in text for w in ["单", "订单", "号", "输入", "查"])
+        return has_kw and (has_order or len(text.strip()) <= 8)
 
     def process_message(self, user_text: str, session_id: str = "default_user") -> Tuple[str, SessionState]:
         """
@@ -69,8 +93,26 @@ class CustomerServiceAgent:
             session.add_message("assistant", reply)
             return reply, session
 
-        # 3. 槽位状态机检测与任务恢复 (Slot-Filling & Task Resumption)
+        # 3. 错误修正与槽位重置检测 (Handling Order Correction / Slot Reset)
+        is_correction = self._is_order_correction(user_text)
         extracted_order = self._extract_order_id(user_text)
+
+        # 如果用户明确表示之前单号输错/需要重查，且本句话中未提供新单号，则主动清空旧槽位并追问
+        if is_correction and not extracted_order:
+            session.slots.pop("order_id", None)
+            session.state = DialogState.COLLECTING_SLOTS
+            session.waiting_for_slot = "order_id"
+            session.pending_intent = "ORDER_QUERY"
+            session.current_intent = "ORDER_QUERY"
+            session.last_thought = "检测到用户反馈订单号错误或需要重新输入，已清空历史槽位并重新引导输入正确单号。"
+            reply = (
+                "好的，没问题！已为您重置订单查询。\n\n"
+                "请问您正确的**订单编号**是多少呢？（例如当前演示支持：`ORD1001`、`ORD1002` 或 `ORD1003`），我立即为您重新查询！"
+            )
+            session.add_message("assistant", reply)
+            return reply, session
+
+        # 4. 槽位状态机检测与任务恢复 (Slot-Filling & Task Resumption)
         if extracted_order:
             session.fill_slot("order_id", extracted_order)
             # 关键状态机恢复：如果之前正在等待订单号槽位，恢复之前挂起的业务意图
@@ -82,7 +124,7 @@ class CustomerServiceAgent:
                 intent = "ORDER_QUERY"
                 session.current_intent = intent
 
-        # 4. 业务办理意图 (查订单 / 查物流 / 退款)
+        # 5. 业务办理意图 (查订单 / 查物流 / 退款)
         if intent in ["ORDER_QUERY", "REFUND"]:
             # 检查必要槽位: order_id
             order_id = session.slots.get("order_id")
@@ -100,25 +142,53 @@ class CustomerServiceAgent:
                 session.add_message("assistant", reply)
                 return reply, session
             else:
-                # 槽位齐全，调用真实业务工具
-                session.state = DialogState.COMPLETED
-                session.last_thought = f"槽位完整 (order_id={order_id})，执行相应业务工具操作。"
-                
-                if intent == "ORDER_QUERY":
-                    tool_res = self.order_service.query_order(order_id)
-                    action_msg = "已为您查询到该订单的最新进度："
-                else: # REFUND
-                    tool_res = self.order_service.apply_refund(order_id, reason="用户在线申请退货")
-                    action_msg = "已为您受理退换货业务："
+                # 槽位齐全，核对订单是否在数据库中存在
+                normalized_id = order_id.strip().upper()
+                order_exists = normalized_id in self.order_service.orders
 
-                # 若是 Real 模型，整合工具输出；Mock 模式直接给出专业回复
-                if self.llm_cfg["mode"] == "real":
-                    reply = self._call_llm_with_tool_result(user_text, tool_res, session)
+                if not order_exists:
+                    # 关键防御：订单不存在！清空无效槽位，引导用户重新输入
+                    session.slots.pop("order_id", None)
+                    session.state = DialogState.COLLECTING_SLOTS
+                    session.waiting_for_slot = "order_id"
+                    session.pending_intent = intent
+                    session.last_thought = f"查询订单号 {order_id} 不存在，已清空错误槽位并引导用户重新提供。"
+
+                    if intent == "ORDER_QUERY":
+                        tool_res = self.order_service.query_order(order_id)
+                    else:
+                        tool_res = self.order_service.apply_refund(order_id, reason="用户在线申请退货")
+
+                    if self.llm_cfg["mode"] == "real":
+                        reply = self._call_llm_with_tool_result(user_text, tool_res, session)
+                    else:
+                        reply = (
+                            f"您好，很抱歉未能查询到该订单信息：\n\n"
+                            f"{tool_res}\n\n"
+                            f"请您仔细核对后重新提供正确的订单编号（例如当前演示支持：`ORD1001`、`ORD1002` 或 `ORD1003`），我马上为您查询！"
+                        )
+                    session.add_message("assistant", reply)
+                    return reply, session
                 else:
-                    reply = f"您好，{action_msg}\n\n{tool_res}\n\n如还有其他问题，请随时吩咐我！"
+                    # 订单真实存在，执行相应业务操作
+                    session.state = DialogState.COMPLETED
+                    session.last_thought = f"槽位完整且订单存在 (order_id={order_id})，执行相应业务工具操作。"
+                    
+                    if intent == "ORDER_QUERY":
+                        tool_res = self.order_service.query_order(order_id)
+                        action_msg = "已为您查询到该订单的最新进度："
+                    else: # REFUND
+                        tool_res = self.order_service.apply_refund(order_id, reason="用户在线申请退货")
+                        action_msg = "已为您受理退换货业务："
 
-                session.add_message("assistant", reply)
-                return reply, session
+                    # 若是 Real 模型，整合工具输出；Mock 模式直接给出专业回复
+                    if self.llm_cfg["mode"] == "real":
+                        reply = self._call_llm_with_tool_result(user_text, tool_res, session)
+                    else:
+                        reply = f"您好，{action_msg}\n\n{tool_res}\n\n如还有其他问题，请随时吩咐我！"
+
+                    session.add_message("assistant", reply)
+                    return reply, session
 
         # 5. FAQ 政策问答检索 (RAG)
         if intent == "FAQ":
