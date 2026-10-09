@@ -1,0 +1,41 @@
+{
+  "ORD1001": {
+    "order_id": "ORD1001",
+    "user_phone": "13800000001",
+    "user_name": "张先生",
+    "product_name": "Pro 30 降噪无线头戴耳机",
+    "amount": 899.00,
+    "status": "已发货",
+    "express_company": "顺丰速运",
+    "tracking_number": "SF10882938123",
+    "current_location": "北京市顺义转运中心，正在分拣发往目的地",
+    "address": "北京市海淀区中关村南大街 1 号",
+    "created_at": "2026-10-08 14:20:00"
+  },
+  "ORD1002": {
+    "order_id": "ORD1002",
+    "user_phone": "13800000002",
+    "user_name": "李女士",
+    "product_name": "Ultra 机械键盘 (RGB红轴)",
+    "amount": 499.00,
+    "status": "已签收",
+    "express_company": "京东快递",
+    "tracking_number": "JD99283182391",
+    "current_location": "已妥投，签收人：本人",
+    "address": "上海市浦东新区张江高科园区 88 号",
+    "created_at": "2026-10-06 10:15:00"
+  },
+  "ORD1003": {
+    "order_id": "ORD1003",
+    "user_phone": "13800000003",
+    "user_name": "王先生",
+    "product_name": "4K 27寸 专业设计显示器",
+    "amount": 2399.00,
+    "status": "待发货",
+    "express_company": "待揽收",
+    "tracking_number": "暂无单号",
+    "current_location": "库房已打包，等待快递揽件",
+    "address": "深圳市南山区科技园南区 6 号楼",
+    "created_at": "2026-10-09 09:30:00"
+  }
+}
