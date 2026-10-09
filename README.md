@@ -2,7 +2,7 @@
 
 # 🎧 OpenAIChatBot
 
-### 基于大语言模型 (LLM) 的现代化智能客服 Agent 框架
+### 基于大语言模型 (LLM) 的智能客服 AI Agent Chat Bot 流程框架
 *A Production-Ready LLM-Powered Customer Service Agent Framework with Dynamic Intent Routing, Stateful Slot Filling, Vector RAG & Tool Orchestration.*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
